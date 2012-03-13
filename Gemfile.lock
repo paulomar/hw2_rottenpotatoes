@@ -41,7 +41,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.2.0)
-    columnize (0.3.5)
+    columnize (0.3.6)
     erubis (2.7.0)
     execjs (1.2.13)
       multi_json (~> 1.0)
