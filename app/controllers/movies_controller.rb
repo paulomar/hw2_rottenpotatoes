@@ -7,23 +7,51 @@ class MoviesController < ApplicationController
   end
 
   def index
-    sorting=nil
-    @sort=params[:sort] 
-    if (@sort!=nil) 
-      # Sorting order specified
-      if @sort=="title" 
-        sorting="title ASC" 
-      else
-        if @sort=="release_date"
-          sorting="release_date ASC"
-        end
-      end  
+    # Get list of all ratings
+    all_ratings
+  
+    logger.debug("*** params ***#{params} \n ")
+    
+    # Filtering
+    # params[:ratings] == {"PG-13"=>"on"}
+    ratings=nil
+    if params[:commit]=="Refresh"
+      if params[:ratings] == nil
+        flash[:ratings] = nil
+      end
     end
-    if sorting==nil 
-      @movies=Movie.all; 
+
+    # Refresh selected
+    @ratings_checked=(params[:ratings] == nil ? flash[:ratings] : params[:ratings])
+    if @ratings_checked==nil; @ratings_checked={}; end
+    ratings = (@ratings_checked=={} ? nil : @ratings_checked.keys)
+    flash[:ratings]=@ratings_checked
+    
+    # Sorting
+    @sort=(params[:sort]==nil ? flash[:sort] : params[:sort])
+    if @sort==nil 
+      # Refence to model
+      @movies=Movie; 
     else
-      @movies = Movie.order(sorting).all
+      @movies = Movie.order("#{@sort} ASC")
     end
+    flash[:sort]=@sort
+    
+    # Filter by ratings
+    if ratings!=nil
+      @movies = @movies.where("rating IN (?)",ratings)
+    end
+
+    # Array with all movies selected 
+    @movies = @movies.all
+    
+    logger.debug("*** checked = #{@ratings_checked}***")
+  end
+  
+  def all_ratings
+    # [{"rating" => "G"}]..
+    @all_ratings = []
+    Movie.select("DISTINCT rating").each { |el| @all_ratings.push(el) }
   end
 
   def new
