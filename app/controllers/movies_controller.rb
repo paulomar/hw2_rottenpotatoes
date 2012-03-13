@@ -16,26 +16,30 @@ class MoviesController < ApplicationController
     # params[:ratings] == {"PG-13"=>"on"}
     ratings=nil
     if params[:commit]=="Refresh"
-      if params[:ratings] == nil
-        flash[:ratings] = nil
+      if params[:ratings] == nil  # Clicked on Refresh but with not selection
+        session[:ratings] = nil   # Clean session info about ratings
       end
     end
 
     # Refresh selected
-    @ratings_checked=(params[:ratings] == nil ? flash[:ratings] : params[:ratings])
+    @ratings_checked=(params[:ratings] == nil ? session[:ratings] : params[:ratings])
     if @ratings_checked==nil; @ratings_checked={}; end
     ratings = (@ratings_checked=={} ? nil : @ratings_checked.keys)
-    flash[:ratings]=@ratings_checked
+
+    # Recall ratings settings for the next time we land in this page
+    session[:ratings]=@ratings_checked
     
     # Sorting
-    @sort=(params[:sort]==nil ? flash[:sort] : params[:sort])
+    @sort=(params[:sort]==nil ? session[:sort] : params[:sort])
     if @sort==nil 
       # Refence to model
       @movies=Movie; 
     else
       @movies = Movie.order("#{@sort} ASC")
     end
-    flash[:sort]=@sort
+    
+    # Recall sorting settings
+    session[:sort]=@sort
     
     # Filter by ratings
     if ratings!=nil
